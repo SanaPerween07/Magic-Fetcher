@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    host: 'magic-video-fetcher.onrender.com', 
+    host: 'localhost', 
     port: 8080,
     proxy: {
       '/api': {
