@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
     // host: 'https://video-magic-fetcher.onrender.com', 
     port: 8080,
     allowedHosts: [
-      'magic-video-fetcher.onrender.com',  // Allow the frontend host
+      'https://magic-video-fetcher.onrender.com',  // Allow the frontend host
     ],
     proxy: {
       '/api': {
