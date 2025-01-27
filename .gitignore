@@ -62,6 +62,7 @@ Thumbs.db
 .env.local
 .env.*.local
 
+
 # Package managers
 package-lock.json
 yarn.lock
@@ -69,4 +70,4 @@ pnpm-lock.yaml
 
 # React-specific
 build/
-!.env
+.env
