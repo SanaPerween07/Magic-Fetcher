@@ -94,7 +94,7 @@ const Index = () => {
 
   const fetchVideoTitle = async (url) => {
     try {
-      const response = await fetch('http://localhost:3001/api/get-title', {
+      const response = await fetch('https://video-magic-fetcher.onrender.com', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
@@ -143,7 +143,7 @@ const Index = () => {
         )
       );
   
-      const response = await fetch('http://localhost:3001/api/download', {
+      const response = await fetch('https://video-magic-fetcher.onrender.com', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: videoStatus.url }),
