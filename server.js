@@ -8,24 +8,26 @@ import fs from 'fs';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+// app.use(cors({origin:true , credentials:true}));
 
-// const allowedOrigins = [
-//   'https://magic-video-fetcher.onrender.com',  // Frontend domain
-//   'http://localhost:8080',  // For local development (if needed)
-// ];
+const allowedOrigins = [
+  'https://magic-video-fetcher.onrender.com',  // Frontend domain
+  'http://localhost:8080',  // For local development (if needed)
+];
 
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-// };
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) { // Allow the request if the origin is in the allowed list
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS')); // Reject other origins
+    }
+  },
+  credentials: true, // Allow credentials (cookies, etc.) to be sent
+};
 
-// app.use(cors(corsOptions));  // Apply CORS configuration
+app.use(cors(corsOptions));  // Apply custom CORS configuration
+
 
 app.use(express.json());
 
