@@ -8,29 +8,32 @@ import fs from 'fs';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// app.use(cors({origin:true , credentials:true}));
+// Directory path setup
 const __dirname = path.resolve();
 
-app.use(express.static(path.join(__dirname, 'dist'))); 
-
+// CORS configuration
 const allowedOrigins = [
   'https://magic-video-fetcher.vercel.app',  // Frontend domain
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) { // Allow the request if the origin is in the allowed list
+    // Allow requests from the allowed origins or if no origin (like from localhost or internal requests)
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS')); // Reject other origins
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true, // Allow credentials (cookies, etc.) to be sent
+  credentials: true,  // Allow credentials (cookies, etc.)
 };
 
-app.use(cors(corsOptions));  // Apply custom CORS configuration
+app.use(cors(corsOptions));  // Apply CORS configuration globally
 
+// Serve static files from 'dist' directory
+app.use(express.static(path.join(__dirname, 'dist')));
 
+// Middleware to parse JSON bodies
 app.use(express.json());
 
 // Store progress for each download
@@ -43,7 +46,7 @@ app.get('/api/progress/:videoId', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Access-Control-Allow-Origin', 'https://magic-video-fetcher.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://magic-video-fetcher.vercel.app');  // Allow CORS on this route
 
   // Send initial progress
   res.write(`data: ${progressMap.get(videoId) || 0}\n\n`);
@@ -61,23 +64,24 @@ app.get('/api/progress/:videoId', (req, res) => {
   });
 });
 
+// Endpoint to get video title
 app.post('/api/get-title', (req, res) => {
   const { url } = req.body;
 
   // Validate URL
   if (!url) {
-    return res.status(400).json({ error: "URL is required" });
+    return res.status(400).json({ error: 'URL is required' });
   }
 
   // Use the correct yt-dlp command syntax
-  const ytDlpCommand = process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
+  const ytDlpCommand = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp';
   const getInfoCommand = `${ytDlpCommand} --dump-json "${url}"`;
 
   exec(getInfoCommand, (error, stdout, stderr) => {
     if (error) {
-      console.error("Error fetching info:", stderr);
+      console.error('Error fetching info:', stderr);
       return res.status(500).json({
-        error: "Failed to fetch video info",
+        error: 'Failed to fetch video info',
         details: stderr,
       });
     }
@@ -85,20 +89,20 @@ app.post('/api/get-title', (req, res) => {
     try {
       // Parse the JSON response from yt-dlp
       const videoInfo = JSON.parse(stdout);
-      const channel = videoInfo.uploader || "Unknown Channel";
-      const title = videoInfo.title || "Untitled";
-      const videoId = videoInfo.id || "Unknown ID";
+      const channel = videoInfo.uploader || 'Unknown Channel';
+      const title = videoInfo.title || 'Untitled';
+      const videoId = videoInfo.id || 'Unknown ID';
 
       // Return extracted information
       res.json({ channel, title, videoId });
     } catch (parseError) {
-      console.error("Error parsing yt-dlp output:", parseError);
-      res.status(500).json({ error: "Failed to parse video information" });
+      console.error('Error parsing yt-dlp output:', parseError);
+      res.status(500).json({ error: 'Failed to parse video information' });
     }
   });
 });
 
-
+// Endpoint to download video
 app.post('/api/download', async (req, res) => {
   const { url } = req.body;
 
@@ -179,6 +183,7 @@ app.post('/api/download', async (req, res) => {
   }
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   console.log(`Downloads will be saved to: ${path.join(os.homedir(), 'Downloads', 'yt-downloads')}`);
