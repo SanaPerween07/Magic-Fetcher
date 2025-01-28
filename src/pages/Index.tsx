@@ -100,10 +100,12 @@ const Index = () => {
         body: JSON.stringify({ url }),
       });
   
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch title');
+        // If the response is not OK, throw an error with the status text
+        throw new Error(`Server returned an error: ${response.statusText}`);
       }
+
+      const data = await response.json();
   
       return { channel: data.channel, title: data.title, videoId: data.videoId };
     } catch (error) {
