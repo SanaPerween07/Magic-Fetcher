@@ -4,7 +4,6 @@ import { exec } from 'child_process';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,7 +14,7 @@ const __dirname = path.resolve();
 app.use(express.static(path.join(__dirname, 'dist'))); 
 
 const allowedOrigins = [
-  'https://magic-video-fetcher.onrender.com',  // Frontend domain
+  'https://magic-video-fetcher.vercel.app',  // Frontend domain
 ];
 
 const corsOptions = {
@@ -44,7 +43,7 @@ app.get('/api/progress/:videoId', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', 'https://magic-video-fetcher.vercel.app');
 
   // Send initial progress
   res.write(`data: ${progressMap.get(videoId) || 0}\n\n`);
