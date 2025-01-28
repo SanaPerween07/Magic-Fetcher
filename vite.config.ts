@@ -6,6 +6,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: '0.0.0.0',
+    port: parseInt(process.env.VITE_PORT || '5173'),
     allowedHosts: [
       "magic-video-fetcher.onrender.com", // Explicitly allow this host,
       process.env.VITE_FRONTEND_URL || 'localhost'  // Allow the frontend host
@@ -31,7 +32,6 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-  port: process.env.VITE_PORT || 8080,
   plugins: [
     react(),
     mode === 'development' &&
