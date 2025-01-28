@@ -12,7 +12,6 @@ const PORT = process.env.PORT || 3001;
 
 const allowedOrigins = [
   'https://magic-video-fetcher.onrender.com',  // Frontend domain
-  'http://localhost:8080',  // For local development (if needed)
 ];
 
 const corsOptions = {
