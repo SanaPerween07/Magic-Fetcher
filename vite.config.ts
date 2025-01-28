@@ -39,5 +39,5 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  port: process.env.VITE_PORT || 8080,
+  port: process.env.VITE_PORT || "0.0.0.0:8080",
 }));
