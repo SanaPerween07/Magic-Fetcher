@@ -68,7 +68,6 @@ app.get('/api/progress/:videoId', (req, res) => {
 app.post('/api/get-title', (req, res) => {
   const { url } = req.body;
 
-  // Validate URL
   if (!url) {
     return res.status(400).json({ error: 'URL is required' });
   }
@@ -86,6 +85,10 @@ app.post('/api/get-title', (req, res) => {
       });
     }
 
+    if (!stdout) {
+      return res.status(404).json({ error: 'No video info found' });
+    }
+
     try {
       // Parse the JSON response from yt-dlp
       const videoInfo = JSON.parse(stdout);
@@ -101,6 +104,7 @@ app.post('/api/get-title', (req, res) => {
     }
   });
 });
+
 
 // Endpoint to download video
 app.post('/api/download', async (req, res) => {
