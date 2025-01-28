@@ -9,6 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // app.use(cors({origin:true , credentials:true}));
+app.use(express.static(path.join(__dirname, 'public'))); 
 
 const allowedOrigins = [
   'https://magic-video-fetcher.onrender.com',  // Frontend domain
