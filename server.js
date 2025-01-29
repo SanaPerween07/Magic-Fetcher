@@ -40,6 +40,9 @@ app.use(express.json());
 
 // Store progress for each download
 const progressMap = new Map();
+app.get("/",(req,res)=>{
+  res.send("Heloo world")
+})
 
 // SSE endpoint for progress updates
 app.get('/api/progress/:videoId', (req, res) => {
