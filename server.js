@@ -7,7 +7,7 @@ import YTDlpWrap from 'yt-dlp-wrap';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ytDlp = new YTDlpWrap.default();
+const ytDlp = new YTDlpWrap('C:\Users\sanah\AppData\Local\Programs\Python\Python310\Scripts\yt-dlp.exe');
 
 // Directory path setup
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
