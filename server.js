@@ -7,7 +7,7 @@ import YTDlpWrap from 'yt-dlp-wrap';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ytDlp = YTDlpWrap('C:/Users/sanah/AppData/Local/Programs/Python/Python310/Scripts/yt-dlp.exe'); 
+const ytDlp = YTDlpWrap(); 
 
 ytDlp.execPromise(['video_url', '--dump-json']).then(output => {
   console.log(output);
