@@ -7,7 +7,13 @@ import YTDlpWrap from 'yt-dlp-wrap';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ytDlp = new YTDlpWrap('C:\Users\sanah\AppData\Local\Programs\Python\Python310\Scripts\yt-dlp.exe');
+const ytDlp = YTDlpWrap('C:/Users/sanah/AppData/Local/Programs/Python/Python310/Scripts/yt-dlp.exe'); 
+
+ytDlp.execPromise(['video_url', '--dump-json']).then(output => {
+  console.log(output);
+}).catch(err => {
+  console.error('Error:', err);
+});
 
 // Directory path setup
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
