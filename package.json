@@ -12,8 +12,6 @@
     "server": "node server.js",
     "start": "concurrently \"npm run dev\" \"npm run server\"",
     "postinstall": "curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && chmod +x /usr/local/bin/yt-dlp"
-}
-
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 // CORS configuration
-const allowedOrigins = ['https://magic-video-fetcher.vercel.app'];
+const allowedOrigins = ['https://magic-video-fetcher.vercel.app', 'http://localhost:8080'];
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -28,6 +28,7 @@ const corsOptions = {
   credentials: true,
 };
 
+app.options('*', cors(corsOptions)); // Allow preflight requests for all routes
 app.use(cors(corsOptions));
 app.use(express.static(path.join(__dirname, 'dist')));
 app.use(express.json());
