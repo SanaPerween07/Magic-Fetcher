@@ -3,9 +3,10 @@ import cors from 'cors';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
-import { exec } from 'child_process'; // Using child_process to call yt-dlp
+import YTDlpWrap from 'yt-dlp-wrap';
 
 const app = express();
+const ytDlp = new YTDlpWrap();
 const PORT = process.env.PORT || 3000;
 
 // Directory path setup
@@ -60,29 +61,24 @@ app.get('/api/progress/:videoId', (req, res) => {
 });
 
 // **Endpoint to get video title**
-app.post('/api/get-title', (req, res) => {
+app.post('/api/get-title', async (req, res) => {
   const { url } = req.body;
 
   if (!url) return res.status(400).json({ error: 'URL is required' });
 
-  exec(`yt-dlp --dump-json ${url}`, (err, stdout, stderr) => {
-    if (err || stderr) {
-      console.error('Error fetching info:', err || stderr);
-      return res.status(500).json({ error: 'Failed to fetch video info' });
-    }
+  try {
+    const output = await ytDlp.execPromise([url, '--dump-json']);
+    const videoInfo = JSON.parse(output);
 
-    try {
-      const videoInfo = JSON.parse(stdout);
-      res.json({
-        channel: videoInfo.uploader || 'Unknown Channel',
-        title: videoInfo.title || 'Untitled',
-        videoId: videoInfo.id || 'Unknown ID',
-      });
-    } catch (parseError) {
-      console.error('Error parsing JSON:', parseError);
-      res.status(500).json({ error: 'Failed to parse video info' });
-    }
-  });
+    res.json({
+      channel: videoInfo.uploader || 'Unknown Channel',
+      title: videoInfo.title || 'Untitled',
+      videoId: videoInfo.id || 'Unknown ID',
+    });
+  } catch (err) {
+    console.error('Error fetching video info:', err);
+    res.status(500).json({ error: 'Failed to fetch video info' });
+  }
 });
 
 // **Endpoint to download video**
@@ -100,25 +96,21 @@ app.post('/api/download', async (req, res) => {
 
     console.log('\nStarting download for:', url);
 
-    exec(`yt-dlp -f "best[ext=mp4]" -o "${outputPath}" ${url}`, (err, stdout, stderr) => {
-      if (err || stderr) {
-        console.error('Error downloading video:', err || stderr);
-        return res.status(500).json({ error: 'Failed to download video' });
-      }
+    // Using yt-dlp-wrap to download the video
+    await ytDlp.execPromise([url, '-f', 'best[ext=mp4]', '-o', outputPath]);
 
-      console.log('✅ Download completed successfully\n');
+    console.log('✅ Download completed successfully\n');
 
-      res.setHeader('Content-Type', 'video/mp4');
-      res.setHeader('Content-Disposition', `attachment; filename="video_${timestamp}.mp4"`);
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Content-Disposition', `attachment; filename="video_${timestamp}.mp4"`);
 
-      const fileStream = fs.createReadStream(outputPath);
-      fileStream.pipe(res);
+    const fileStream = fs.createReadStream(outputPath);
+    fileStream.pipe(res);
 
-      res.on('finish', () => {
-        console.log('✅ Response sent to client\n');
-        fs.unlink(outputPath, (err) => {
-          if (err) console.error('Error deleting file:', err);
-        });
+    res.on('finish', () => {
+      console.log('✅ Response sent to client\n');
+      fs.unlink(outputPath, (err) => {
+        if (err) console.error('Error deleting file:', err);
       });
     });
   } catch (error) {
