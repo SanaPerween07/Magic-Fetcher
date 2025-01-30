@@ -3,11 +3,10 @@ import cors from 'cors';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
-import YTDlpWrap from 'yt-dlp-wrap';
+import { exec } from 'child_process'; // Using child_process to call yt-dlp
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ytDlp = new YTDlpWrap.default(); 
 
 // Directory path setup
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -60,22 +59,15 @@ app.get('/api/progress/:videoId', (req, res) => {
   });
 });
 
-// Endpoint to get video title
-const { exec } = require('child_process');
-
+// **Endpoint to get video title**
 app.post('/api/get-title', (req, res) => {
   const { url } = req.body;
 
   if (!url) return res.status(400).json({ error: 'URL is required' });
 
   exec(`yt-dlp --dump-json ${url}`, (err, stdout, stderr) => {
-    if (err) {
-      console.error('Error fetching info:', err);
-      return res.status(500).json({ error: 'Failed to fetch video info' });
-    }
-
-    if (stderr) {
-      console.error('stderr:', stderr);
+    if (err || stderr) {
+      console.error('Error fetching info:', err || stderr);
       return res.status(500).json({ error: 'Failed to fetch video info' });
     }
 
@@ -93,7 +85,7 @@ app.post('/api/get-title', (req, res) => {
   });
 });
 
-// Endpoint to download video
+// **Endpoint to download video**
 app.post('/api/download', async (req, res) => {
   const { url } = req.body;
 
@@ -108,20 +100,25 @@ app.post('/api/download', async (req, res) => {
 
     console.log('\nStarting download for:', url);
 
-    await ytDlp.execPromise([url, '-f', 'best[ext=mp4]', '-o', outputPath]);
+    exec(`yt-dlp -f "best[ext=mp4]" -o "${outputPath}" ${url}`, (err, stdout, stderr) => {
+      if (err || stderr) {
+        console.error('Error downloading video:', err || stderr);
+        return res.status(500).json({ error: 'Failed to download video' });
+      }
 
-    console.log('✅ Download completed successfully\n');
+      console.log('✅ Download completed successfully\n');
 
-    res.setHeader('Content-Type', 'video/mp4');
-    res.setHeader('Content-Disposition', `attachment; filename="video_${timestamp}.mp4"`);
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Content-Disposition', `attachment; filename="video_${timestamp}.mp4"`);
 
-    const fileStream = fs.createReadStream(outputPath);
-    fileStream.pipe(res);
+      const fileStream = fs.createReadStream(outputPath);
+      fileStream.pipe(res);
 
-    res.on('finish', () => {
-      console.log('✅ Response sent to client\n');
-      fs.unlink(outputPath, (err) => {
-        if (err) console.error('Error deleting file:', err);
+      res.on('finish', () => {
+        console.log('✅ Response sent to client\n');
+        fs.unlink(outputPath, (err) => {
+          if (err) console.error('Error deleting file:', err);
+        });
       });
     });
   } catch (error) {
@@ -130,7 +127,7 @@ app.post('/api/download', async (req, res) => {
   }
 });
 
-// Start server
+// **Start server**
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
