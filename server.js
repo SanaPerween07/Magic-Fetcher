@@ -61,24 +61,36 @@ app.get('/api/progress/:videoId', (req, res) => {
 });
 
 // Endpoint to get video title
-app.post('/api/get-title', async (req, res) => {
+const { exec } = require('child_process');
+
+app.post('/api/get-title', (req, res) => {
   const { url } = req.body;
 
   if (!url) return res.status(400).json({ error: 'URL is required' });
 
-  try {
-    const output = await ytDlp.execPromise([url, '--dump-json']);
-    const videoInfo = JSON.parse(output);
+  exec(`yt-dlp --dump-json ${url}`, (err, stdout, stderr) => {
+    if (err) {
+      console.error('Error fetching info:', err);
+      return res.status(500).json({ error: 'Failed to fetch video info' });
+    }
 
-    res.json({
-      channel: videoInfo.uploader || 'Unknown Channel',
-      title: videoInfo.title || 'Untitled',
-      videoId: videoInfo.id || 'Unknown ID',
-    });
-  } catch (error) {
-    console.error('Error fetching info:', error);
-    res.status(500).json({ error: 'Failed to fetch video info' });
-  }
+    if (stderr) {
+      console.error('stderr:', stderr);
+      return res.status(500).json({ error: 'Failed to fetch video info' });
+    }
+
+    try {
+      const videoInfo = JSON.parse(stdout);
+      res.json({
+        channel: videoInfo.uploader || 'Unknown Channel',
+        title: videoInfo.title || 'Untitled',
+        videoId: videoInfo.id || 'Unknown ID',
+      });
+    } catch (parseError) {
+      console.error('Error parsing JSON:', parseError);
+      res.status(500).json({ error: 'Failed to parse video info' });
+    }
+  });
 });
 
 // Endpoint to download video
